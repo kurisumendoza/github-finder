@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { checkIfFollowingUser } from '../api/github';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { checkIfFollowingUser, followGithubUser } from '../api/github';
 import { FaGithubAlt, FaUserMinus, FaUserPlus } from 'react-icons/fa';
 import type { GitHubUser } from '../types';
 
@@ -10,6 +10,25 @@ const UserCard = ({ user }: { user: GitHubUser }) => {
     enabled: !!user.login,
   });
 
+  const followMutation = useMutation({
+    mutationFn: () => followGithubUser(user.login),
+    onSuccess: () => {
+      console.log(`You are now following ${user.login}`);
+      refetch();
+    },
+    onError: (err) => {
+      console.error(err.message);
+    },
+  });
+
+  const handleFollow = () => {
+    if (isFollowing) {
+      //
+    } else {
+      followMutation.mutate();
+    }
+  };
+
   return (
     <div className="user-card">
       <img src={user.avatar_url} alt={user.name} className="avatar" />
@@ -17,7 +36,10 @@ const UserCard = ({ user }: { user: GitHubUser }) => {
       <p className="bio">{user.bio}</p>
 
       <div className="user-card-buttons">
-        <button className={`follow-btn ${isFollowing ? 'following' : ''}`}>
+        <button
+          onClick={handleFollow}
+          className={`follow-btn ${isFollowing ? 'following' : ''}`}
+        >
           {isFollowing ? (
             <>
               <FaUserMinus className="follow-icon" />
